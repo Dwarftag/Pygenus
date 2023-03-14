@@ -7,16 +7,25 @@ import math
 import Quarky_math_unit as math2
 
 class Monde:
-    RECTANGULAR=1
-    CIRCULAR=2
-    
-    def __init__ (self,rectangle:"vec",radius:float,center:"vec",deload_radius:float,type):
+    CONFIG = {
+        "world_type":"rectangle",
+        "deload_radius":20,
         
-        self.rectangle=rectangle
-        self.radius=radius
-        self.center=center
-        self.deload_radius=deload_radius
-        self.type=type
+        "rect_config":{
+            "dimension":vec(500,500)
+        },
+
+        "circle_config":{
+            "center":vec(250,250),
+            "radius":250,
+        },
+
+        "integration_method":"EM",
+        "collision_detection":"brute",
+
+    }
+    
+    def __init__ (self):
         
         self.Objects=[]
         self.Joints=[]
@@ -38,6 +47,11 @@ class Monde:
     def remove_mesh(self,mesh):
         self.Objects[1].pop(self.Objects[1].index(mesh))
 
+    def remove_object(self,body,shape):
+        self.remove_body(body)
+        self.remove_mesh(shape)
+        return
+
     def add_joints(self,joint):
         self.Joints.append(joint)
         
@@ -50,46 +64,44 @@ class Monde:
         return
 
     def deload_object(self,object,shape):
-        if self.type== self.RECTANGULAR:
-            if object.position.x>self.rectangle.x+self.deload_radius or object.position.x < -self.deload_radius or object.position.y>self.rectangle.y+self.deload_radius or object.position.y<0-self.deload_radius:
+        if self.CONFIG.get("world_type")=="rectangle":
+            if object.position.x>(self.CONFIG["rect_config"].get("dimension")).x+self.CONFIG.get("deload_radius") or object.position.x<-self.CONFIG.get("deload_radius") or object.position.y>(self.CONFIG["rect_config"].get("dimension")).y+self.CONFIG.get("deload_radius") or object.position.y<-self.CONFIG.get("deload_radius"):
                 self.remove_object(object,shape)
-        elif self.type == self.CIRCULAR:
-            if (object.position.get_linking_vector(self.center)).magnitude>=self.radius+self.deload_radius:
+        elif self.CONFIG.get("world_type") == "circle":
+            if (object.position.get_linking_vector(self.CONFIG["circle_config"].get("center"))).magnitude>=self.radius+self.deload_radius:
                 self.remove_object(object,shape)
+        else:
+            raise Exception("Unspecified or wrong CONFIG parameter")
         return
     
     def apply_constraints(self,body,shape):
-        if self.type==self.CIRCULAR:
-            to_object= self.center-body.position
-            if to_object.magnitude>=(self.radius-shape.radius):
+        if self.CONFIG.get("world_type")=="circle":
+            to_object= self.CONFIG["circle_config"].get("center")-body.position
+            if to_object.magnitude>=self.CONFIG["circle_config"].get("radius"):
                 n = vec.normalise(to_object)
                 impulse=((-(1+body.restitution)*body.linear_velocity).dot(n))/(n.dot(n*1/body.mass))
                 body.linear_velocity= body.linear_velocity+(impulse/body.mass)*n
                 body.position += n*(to_object.magnitude-(self.radius-shape.radius))
         
-        if self.type==self.RECTANGULAR:
+        if self.CONFIG.get("world_type")=="rectangle":
             #The following formulas are derived from the impulse formula
-            if body.position.x+shape.radius>self.rectangle.x:
+            if body.position.x>(self.CONFIG["rect_config"].get("dimension")).x:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
-                body.position.x -= (body.position.x+shape.radius-self.rectangle.x)
             
-            if body.position.x-shape.radius<0:
+            if body.position.x<0:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
-                body.position.x += (shape.radius-body.position.x)
 
-            if body.position.y+shape.radius>self.rectangle.y:
+            if body.position.y>(self.CONFIG["rect_config"].get("dimension")).y:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
-                body.position.y -= (body.position.y+shape.radius-self.rectangle.y)
             
-            if body.position.y-shape.radius<0:
+            if body.position.y<0:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
-                body.position.y += (shape.radius-body.position.y)
         
         return
 
 class Newton_Monde(Monde):
-    def __init__(self,rectangle:"vec",radius:float,center:"vec",deload_radius:float,type,gravity:"vec"= vec(0,20)):
-        super().__init__(rectangle,radius,center,deload_radius,type)
+    def __init__(self,gravity):
+        super().__init__()
         self.gravity=gravity
 
     def update(self,t):
