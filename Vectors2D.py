@@ -167,7 +167,10 @@ class Vect2D():
         return (self.x,self.y)
     
     def list(self)->list:
-        return [self.x,self.y] 
+        return [self.x,self.y]
+    
+    def complex(self):
+        return complex(self.x,self.y)
 
     @staticmethod
     def null()->"Vect2D":
