@@ -12,6 +12,7 @@ class RigidBody:
         self.position= vec.null()
         self.linear_velocity= vec.null()
         self.force= vec.null()
+        self.mass=mass
         
         self.angle=0
         self.angular_velocity=0
@@ -19,20 +20,28 @@ class RigidBody:
         self.inertia=angular_inertia
 
         self.body_type=body_type
-        self.mass=mass
 
         self.restitution=Clamp(restitution,0,1)
         self.static_friction=static_friction
         self.dynamic_friction=dynamic_friction
+        
         return
     
     @property
     def linear_momentum(self):
-        return self.mass*self.linear_velocity.magnitude
+        return self.mass*self.linear_velocity
     
     @property
     def kinetic_energy(self):
-        return self.mass*(self.linear_velocity.magnitude**2)
+        return (1/2)*self.mass*(self.linear_velocity.magnitude)**2
+    
+    @property
+    def angular_momentum(self):
+        return self.inertia*self.angular_velocity
+    
+    @property
+    def angular_energy(self):
+        return (1/2)*self.inertia*(self.angular_velocity)**2
     
     
 

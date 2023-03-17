@@ -10,9 +10,11 @@ class Monde:
     CONFIG = {
         "world_type":"rectangle",
         "deload_radius":20,
+        "cap_speed":500,
+        "n_substeps":1,
         
         "rect_config":{
-            "dimension":vec(500,500)
+            "dimension":vec(200,200)
         },
 
         "circle_config":{
@@ -31,6 +33,7 @@ class Monde:
         self.Joints=[]
         return
 
+
     def add_object(self,object:"RigidBody",shape:"Mesh"):
         self.Objects.append([object,shape])
         return
@@ -39,7 +42,8 @@ class Monde:
         for object in len(list):
             self.Objects.append(object)
         return
-    
+
+
     def remove_body(self,body):
         self.Objects[0].pop(self.Objects[0].index(body))
         return
@@ -48,9 +52,9 @@ class Monde:
         self.Objects[1].pop(self.Objects[1].index(mesh))
 
     def remove_object(self,body,shape):
-        self.remove_body(body)
-        self.remove_mesh(shape)
+        self.Objects.pop(self.Objects.index([body,shape]))
         return
+
 
     def add_joints(self,joint):
         self.Joints.append(joint)
@@ -63,6 +67,7 @@ class Monde:
             self.Joints.append(joint)
         return
 
+
     def deload_object(self,object,shape):
         if self.CONFIG.get("world_type")=="rectangle":
             if object.position.x>(self.CONFIG["rect_config"].get("dimension")).x+self.CONFIG.get("deload_radius") or object.position.x<-self.CONFIG.get("deload_radius") or object.position.y>(self.CONFIG["rect_config"].get("dimension")).y+self.CONFIG.get("deload_radius") or object.position.y<-self.CONFIG.get("deload_radius"):
@@ -71,7 +76,7 @@ class Monde:
             if (object.position.get_linking_vector(self.CONFIG["circle_config"].get("center"))).magnitude>=self.radius+self.deload_radius:
                 self.remove_object(object,shape)
         else:
-            raise Exception("Unspecified or wrong CONFIG parameter")
+            raise Exception("Unknown 'world_type' in CONFIG")
         return
     
     def apply_constraints(self,body,shape):
@@ -99,21 +104,23 @@ class Monde:
         
         return
 
-class Newton_Monde(Monde):
+class Gravity_Monde(Monde):
     def __init__(self,gravity):
         super().__init__()
         self.gravity=gravity
 
     def update(self,t):
-        for joint in self.Joints:
-            joint.solve_joint()
-        for object in self.Objects:
-            self.resolve_linear_motion(object[0],t)
-            self.apply_constraints(object[0],object[1])
-            #self.resolve_angular_motion(body,t)
-            self.deload_object(object[0],object[1])
-            object[1].actualise_pos()
-        check.resolve_collisions(self.Objects)
+        N=self.CONFIG.get("n_substeps")
+        for i in range (0,N):
+            for joint in self.Joints:
+                joint.solve_joint()
+            for object in self.Objects:
+                self.resolve_linear_motion(object[0],t/N)
+                self.apply_constraints(object[0],object[1])
+                #self.resolve_angular_motion(body,t)
+                self.deload_object(object[0],object[1])
+                object[1].actualise_pos()
+            check.resolve_collisions(self.Objects)
     
     def resolve_linear_motion(self,body,t):
         body.force += self.gravity*body.mass

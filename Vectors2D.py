@@ -1,6 +1,9 @@
 import math
 class Vect2D():
 
+    x=float
+    y=float
+
     def __init__(self,coordx,coordy):
         self.x=coordx
         self.y=coordy
@@ -84,13 +87,13 @@ class Vect2D():
             else:
                 raise Exception("The tuple is not two dimensionnal")
         else:
-            raise TypeError("'Vect2D' substraction is only supported with 'tuple' or 'Vect2D' not "+str(type(other)))
+            raise TypeError("unsupported operand type(s) for -: "+str(type(other))+" and 'Vect2D'"+"\n Excpected 'Vect2D' or 'tuple' and 'Vect2D' ")
     
     def __rmul__(self,other:float)->"Vect2D":
         if type(other)==float or type(other)==int:    
             return Vect2D(self.x*other,self.y*other)
         else:
-            raise TypeError("Can only multiply a 'Vect2D' by a float not by"+str(type(other)))
+            raise TypeError("unsupported operand type(s) for *: "+str(type(other))+" and 'Vect2D'"+"\n Excpected 'float' and 'Vect2D' ")
     
     def __rtruediv__(self,other:float)->"Vect2D":
         if type(other)==float or type(other)==int:
@@ -99,7 +102,8 @@ class Vect2D():
             else:
                 raise ZeroDivisionError("What is wrong with u?")
         else:
-            raise TypeError("Can only divide a 'Vect2D' by a float not by "+str(type(other)))
+            raise TypeError("unsupported operand type(s) for /: "+str(type(other))+" and 'Vect2D'"+"\n Excpected 'float' and 'Vect2D' ")
+
 
     @property
     def magnitude(self)->float:
@@ -108,9 +112,10 @@ class Vect2D():
     @property
     def angle(self)->float:
         if self==Vect2D(0,0):
-            raise Exception("The null vector has no angle")
+            return 0
         else:
             return math.acos(self.x/self.magnitude)
+
 
     def normal(self)->"Vect2D":
         if self==Vect2D(0,0):
@@ -140,7 +145,8 @@ class Vect2D():
             return (self.x*other.x+self.y*other.y)
         else:
             raise TypeError("The dot product is only supported with another 'Vect2D' not with " +str(type(other)))
-    
+
+
     def get_distance(self, other:("Vect2D" or tuple[float,float])) -> float:
         if type(other)==Vect2D:
             return math.sqrt((self.x - other.x) ** 2 + (self.y - other.y) ** 2)
@@ -169,8 +175,12 @@ class Vect2D():
     def list(self)->list:
         return [self.x,self.y]
     
-    def complex(self):
+    def complex(self)->complex:
         return complex(self.x,self.y)
+    
+    def polar_form(self):
+        return (self.magnitude,self.angle)
+
 
     @staticmethod
     def null()->"Vect2D":
