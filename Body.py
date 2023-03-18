@@ -10,6 +10,7 @@ class RigidBody:
     
     def __init__(self,mass:float,angular_inertia:float,restitution=1,static_friction=0,dynamic_friction=0,body_type=None):
         self.position= vec.null()
+        self.old_position=vec.null()
         self.linear_velocity= vec.null()
         self.force= vec.null()
         self.mass=mass

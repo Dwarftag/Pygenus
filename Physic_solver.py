@@ -5,10 +5,11 @@ from Vectors2D import Vect2D as vec
 import Collision_detection as check
 import math
 import Quarky_math_unit as math2
+import Integration_methods as Im
 
 class Monde:
     CONFIG = {
-        "world_type":"rectangle",
+        "world_type":"circle",
         "deload_radius":20,
         "cap_speed":500,
         "n_substeps":1,
@@ -18,11 +19,11 @@ class Monde:
         },
 
         "circle_config":{
-            "center":vec(250,250),
-            "radius":250,
+            "center":vec(50,50),
+            "radius":50,
         },
 
-        "integration_method":"EM",
+        "integration_method":"Verlet",
         "collision_detection":"brute",
 
     }
@@ -73,7 +74,7 @@ class Monde:
             if object.position.x>(self.CONFIG["rect_config"].get("dimension")).x+self.CONFIG.get("deload_radius") or object.position.x<-self.CONFIG.get("deload_radius") or object.position.y>(self.CONFIG["rect_config"].get("dimension")).y+self.CONFIG.get("deload_radius") or object.position.y<-self.CONFIG.get("deload_radius"):
                 self.remove_object(object,shape)
         elif self.CONFIG.get("world_type") == "circle":
-            if (object.position.get_linking_vector(self.CONFIG["circle_config"].get("center"))).magnitude>=self.radius+self.deload_radius:
+            if (object.position.get_linking_vector(self.CONFIG["circle_config"].get("center"))).magnitude>=self.CONFIG["circle_config"].get("radius")+self.CONFIG.get("deload_radius"):
                 self.remove_object(object,shape)
         else:
             raise Exception("Unknown 'world_type' in CONFIG")
@@ -82,14 +83,14 @@ class Monde:
     def apply_constraints(self,body,shape):
         if self.CONFIG.get("world_type")=="circle":
             to_object= self.CONFIG["circle_config"].get("center")-body.position
-            if to_object.magnitude>=self.CONFIG["circle_config"].get("radius"):
+            radius=self.CONFIG["circle_config"].get("radius")
+            if to_object.magnitude>=radius:
                 n = vec.normalise(to_object)
                 impulse=((-(1+body.restitution)*body.linear_velocity).dot(n))/(n.dot(n*1/body.mass))
                 body.linear_velocity= body.linear_velocity+(impulse/body.mass)*n
-                body.position += n*(to_object.magnitude-(self.radius-shape.radius))
+                body.position += n*(to_object.magnitude-(radius-shape.radius))
         
         if self.CONFIG.get("world_type")=="rectangle":
-            #The following formulas are derived from the impulse formula
             if body.position.x>(self.CONFIG["rect_config"].get("dimension")).x:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
             
@@ -116,24 +117,34 @@ class Gravity_Monde(Monde):
                 joint.solve_joint()
             for object in self.Objects:
                 self.resolve_linear_motion(object[0],t/N)
-                self.apply_constraints(object[0],object[1])
-                #self.resolve_angular_motion(body,t)
-                self.deload_object(object[0],object[1])
                 object[1].actualise_pos()
+                self.apply_constraints(object[0],object[1])
+                self.deload_object(object[0],object[1])
             check.resolve_collisions(self.Objects)
     
     def resolve_linear_motion(self,body,t):
         body.force += self.gravity*body.mass
-        body.linear_velocity += body.force*t/body.mass
-        body.position += body.linear_velocity*t
+        body.acceleration= body.force/body.mass
+        
+        Integration=self.CONFIG.get("integration_method")
+        if Integration=="EEM":
+            Im.EEM(body,t)
+        elif Integration=="IEM":
+            Im.IEM(body,t)
+        elif Integration=="SIE":
+            Im.SIE(body,t)
+        elif Integration=="IE":
+            Im.IE(body,t)
+        elif Integration=="Verlet":
+            Im.Verlet(body,t)
+        elif Integration=="RK4":
+            Im.RK4(body,t)
+        elif Integration=="Midpoint":
+            Im.Mdpoint(body,t)
+        else:
+            raise Exception("Unrecognised integration method in CONFIG")
+        
         body.force=vec.null()
         if body.linear_velocity.magnitude>=500:
             body.linear_velocity = body.linear_velocity*(500/body.linear_velocity.magnitude)
-        return
-    
-    def resolve_angular_motion(self,body,t):
-        body.torque += "???"
-        body.angular_velocity += body.torque*t/body.inertia
-        body.angle += (body.angular_velocity*t)
-        body.torque= 0
         return
