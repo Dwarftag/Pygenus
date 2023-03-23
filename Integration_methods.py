@@ -11,7 +11,7 @@ def IEM(object,dt):
 
 #Semi-implicit Euler
 def SIE(object,dt):
-    object.velocity += object.acceleration*dt
+    object.linear_velocity += object.acceleration*dt
     object.position += object.linear_velocity*dt
     return
 
@@ -21,9 +21,9 @@ def IE(object,dt):
 
 #Verlet integration
 def Verlet(object,dt):
-    object.velocity=object.position-object.old_position
+    object.linear_velocity=object.position-object.old_position
     object.old_position=object.position
-    object.position=object.position+object.velocity*dt+object.acceleration*dt**2
+    object.position += object.linear_velocity+object.acceleration*(dt**2)
     return
 
 #Runge-Kutta 4 Method

@@ -9,10 +9,10 @@ import Integration_methods as Im
 
 class Monde:
     CONFIG = {
-        "world_type":"circle",
+        "world_type":"rectangle",
         "deload_radius":20,
         "cap_speed":500,
-        "n_substeps":1,
+        "n_substeps":5,
         
         "rect_config":{
             "dimension":vec(200,200)
@@ -93,34 +93,21 @@ class Monde:
         if self.CONFIG.get("world_type")=="rectangle":
             if body.position.x>(self.CONFIG["rect_config"].get("dimension")).x:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
+                body.position.x = (self.CONFIG["rect_config"].get("dimension")).x
             
             if body.position.x<0:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
+                body.position.x = 0
 
             if body.position.y>(self.CONFIG["rect_config"].get("dimension")).y:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
+                body.position.y =(self.CONFIG["rect_config"].get("dimension")).y
             
             if body.position.y<0:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
+                body.position.y=0
         
         return
-
-class Gravity_Monde(Monde):
-    def __init__(self,gravity):
-        super().__init__()
-        self.gravity=gravity
-
-    def update(self,t):
-        N=self.CONFIG.get("n_substeps")
-        for i in range (0,N):
-            for joint in self.Joints:
-                joint.solve_joint()
-            for object in self.Objects:
-                self.resolve_linear_motion(object[0],t/N)
-                object[1].actualise_pos()
-                self.apply_constraints(object[0],object[1])
-                self.deload_object(object[0],object[1])
-            check.resolve_collisions(self.Objects)
     
     def resolve_linear_motion(self,body,t):
         body.force += self.gravity*body.mass
@@ -145,6 +132,24 @@ class Gravity_Monde(Monde):
             raise Exception("Unrecognised integration method in CONFIG")
         
         body.force=vec.null()
-        if body.linear_velocity.magnitude>=500:
-            body.linear_velocity = body.linear_velocity*(500/body.linear_velocity.magnitude)
+        if body.linear_velocity.magnitude>=self.CONFIG.get("cap_speed"):
+            body.linear_velocity = self.CONFIG.get("cap_speed")
         return
+
+class Gravity_Monde(Monde):
+    def __init__(self,gravity):
+        super().__init__()
+        self.gravity=gravity
+
+    def update(self,t):
+        N=self.CONFIG.get("n_substeps")
+        for i in range (0,N):
+            for joint in self.Joints:
+                joint.solve_joint()
+            for object in self.Objects:
+                self.resolve_linear_motion(object[0],t/N)
+                object[1].actualise_pos()
+                self.apply_constraints(object[0],object[1])
+                self.deload_object(object[0],object[1])
+            check.resolve_collisions(self.Objects)
+    
