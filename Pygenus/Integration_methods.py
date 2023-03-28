@@ -1,4 +1,9 @@
 
+IM_Dictionnary={}
+
+def null():
+    return
+
 #Explicit Euler method
 def EEM(object,dt):
     object.position += object.linear_velocity*dt
@@ -31,5 +36,19 @@ def RK4M(object,dt):
     return
 
 #Midpoint Method
-def Midpoint(object):
+def Midpoint(object,dt):
     return
+
+def solve_motion(IM:str,body,dt:float):
+    a = IM_Dictionnary.get(IM)
+    if type(a)!=type(null):
+        raise Exception("Could not find a valid integration method")
+    else:
+        a(body,dt)
+
+def add_method(key:str,method):
+    IM_Dictionnary[key]=method
+    return 0
+
+def remove_method(key:str):
+    IM_Dictionnary.pop(key) 

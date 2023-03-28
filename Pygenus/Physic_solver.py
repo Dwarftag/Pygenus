@@ -1,11 +1,11 @@
-from Body import *
-from Mesh import *
-from Joint import *
-from Vectors2D import Vect2D as vec
-import Collision_detection as check
+from .Body import *
+from .Mesh import *
+from .Joint import *
+from .Vectors2D import Vect2D as vec
+from .Collision_detection import resolve_collisions
 import math
-import Quarky_math_unit as math2
-import Integration_methods as Im
+from .Quarky_math_unit import *
+from .Integration_methods import add_method,solve_motion,null
 
 class Monde:
     CONFIG = {
@@ -23,8 +23,8 @@ class Monde:
             "radius":50,
         },
 
-        "integration_method":"Verlet",
-        "collision_detection":"brute",
+        "integration_method":"SIE",
+        "collision_detection_method":"brute",
 
     }
     
@@ -93,43 +93,29 @@ class Monde:
         if self.CONFIG.get("world_type")=="rectangle":
             if body.position.x>(self.CONFIG["rect_config"].get("dimension")).x:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
-                body.position.x = (self.CONFIG["rect_config"].get("dimension")).x
             
             if body.position.x<0:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
-                body.position.x = 0
 
             if body.position.y>(self.CONFIG["rect_config"].get("dimension")).y:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
-                body.position.y =(self.CONFIG["rect_config"].get("dimension")).y
             
             if body.position.y<0:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
-                body.position.y=0
         
         return
     
     def resolve_linear_motion(self,body,t):
-        body.force += self.gravity*body.mass
-        body.acceleration= body.force/body.mass
-        
+
+        body.acceleration=body.force/body.mass
+
         Integration=self.CONFIG.get("integration_method")
-        if Integration=="EEM":
-            Im.EEM(body,t)
-        elif Integration=="IEM":
-            Im.IEM(body,t)
-        elif Integration=="SIE":
-            Im.SIE(body,t)
-        elif Integration=="IE":
-            Im.IE(body,t)
-        elif Integration=="Verlet":
-            Im.Verlet(body,t)
-        elif Integration=="RK4":
-            Im.RK4(body,t)
-        elif Integration=="Midpoint":
-            Im.Mdpoint(body,t)
+        if type(Integration)==type(null):
+            Integration(body,t)
+        elif type(Integration)!=str:
+            raise Exception("The 'integration_method' argument in CONFIG is not a string")
         else:
-            raise Exception("Unrecognised integration method in CONFIG")
+            solve_motion(Integration,body,t)
         
         body.force=vec.null()
         if body.linear_velocity.magnitude>=self.CONFIG.get("cap_speed"):
@@ -147,9 +133,10 @@ class Gravity_Monde(Monde):
             for joint in self.Joints:
                 joint.solve_joint()
             for object in self.Objects:
+                object[0].force+=self.gravity
                 self.resolve_linear_motion(object[0],t/N)
                 object[1].actualise_pos()
                 self.apply_constraints(object[0],object[1])
                 self.deload_object(object[0],object[1])
-            check.resolve_collisions(self.Objects)
+            resolve_collisions(self.Objects)
     

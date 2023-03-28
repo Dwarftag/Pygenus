@@ -1,4 +1,4 @@
-from Vectors2D import Vect2D as vec
+from .Vectors2D import Vect2D as vec
 
 class Mesh:
     def __init__(self,object):

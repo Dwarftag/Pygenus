@@ -1,6 +1,6 @@
 # PYGENUS
 
-## An open source minimalist physic engine library
+## An open source minimalist 2D physic engine library
 
 My goal for this is to have a physic engine that can run on python with no dependancy(at least for the computations).  
 This makes it harder and less convenient to use for the public but I think it's a cool challenge.  

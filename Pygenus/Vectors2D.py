@@ -1,4 +1,5 @@
 import math
+
 class Vect2D():
 
     x=float

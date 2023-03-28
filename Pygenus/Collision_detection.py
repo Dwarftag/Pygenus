@@ -1,4 +1,4 @@
-from Vectors2D import Vect2D as vec
+from .Vectors2D import Vect2D as vec
 
 def resolve_collisions(Objects:list):
     for i in range(0,len(Objects)-1):

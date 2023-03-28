@@ -1,12 +1,12 @@
-from Vectors2D import Vect2D as vec
-from Quarky_math_unit import Clamp
+from .Vectors2D import Vect2D as vec
+from .Quarky_math_unit import Clamp
 
 class RigidBody:
     
-    def __init__(self,mass:float,angular_inertia:float,restitution=1,static_friction=0,dynamic_friction=0):
-        self.position= vec.null()
-        self.old_position= vec.null()
-        self.linear_velocity= vec.null()
+    def __init__(self,mass:float,pos_ini:vec,lin_vel_ini:vec,angular_inertia:float,restitution:float=1,static_friction:float=0,dynamic_friction:float=0):
+        self.position= pos_ini
+        self.old_position= pos_ini
+        self.linear_velocity= lin_vel_ini
         self.force= vec.null()
         self.mass=mass
         
@@ -15,7 +15,7 @@ class RigidBody:
         self.torque=0
         self.inertia=angular_inertia
 
-        self.restitution=Clamp(restitution,0,1)
+        self.restitution=restitution
         self.static_friction=static_friction
         self.dynamic_friction=dynamic_friction
         
