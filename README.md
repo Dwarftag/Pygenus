@@ -11,9 +11,10 @@ that could be used from easy projects to more advanced simulation.
 In particular, I would like to add things such as:  
 
 1. Fields
-1. Object decoratos 
+1. "Object decoratos" 
 1. Advanced triggers
 1. Fluids
+1. Waves (just so that it can be more efficient than fields)
 1. And much,much more... (like I have a full list of what I want it to have)
 
 ## Customzation
@@ -29,10 +30,10 @@ Obviously the downside to this is that the simulation becomes much more unstable
 ## Pull requests
 
 As stated earlier, I want this project to be open-sourced. I'm still in the beginning of the process and there are a lot of things that are left to do.
-I am not open yet to pull requests as I want to finish he main thing myself as it is a side project and a learning opportunity on my side. But when I will have done everything that I wanted to or at least have finished the main skeleton, then I'll start accepting pull requests.
+I am not open yet to pull requests as I want to finish he main thing myself because it is a side project and a learning opportunity on my side. But when I will have done almost everything that I wanted to or at least have finished the main skeleton, then I'll start accepting pull requests.
 
 However I am very open to people who would like to give me tips on how to do things or on how to improve my code in anyway possible.
 
 ## Documentation
 
-Currently, there is not a single line of comment in the code or a single documentation available or a single code example/walkthrough to help you work this is engine so I guess you will have to dig in yourself and try to understand it (but don't worry, I will add one later when I'll be finished with the main part) 
+Currently, there is nearly not a single line of comment in the code or a single documentation available or a single code example/walkthrough to help you work with this engine so I guess you will have to dig in yourself and try to understand it (but don't worry, I will add one later when I'll be finished with the main part...). 

@@ -1,4 +1,16 @@
 
+""" This part is the one that deals with the integrations methods for the linear motion
+    As per today, there are 7 methods that are implemented by default, each with their own key:
+
+    - Explicit Euler Method: key="EEM"
+    - Improved Euler Method: key="IE"
+    - Semi Implicit Euler: key="SIE"
+    - Implicit Euler: key="IE"
+    - Verlet Integration: key="Verlet"
+    - Runge Kutta 4 Method: key="RK4"
+    - Midpoint Method: key="Midpont"
+"""
+
 IM_Dictionnary={}
 
 def null():

@@ -3,13 +3,11 @@ from .Mesh import *
 from .Joint import *
 from .Vectors2D import Vect2D as vec
 from .Collision_detection import resolve_collisions
-import math
-from .Quarky_math_unit import *
 from .Integration_methods import add_method,solve_motion,null
 
 class Monde:
     CONFIG = {
-        "world_type":"rectangle",
+        "world_type":"circle",
         "deload_radius":20,
         "cap_speed":500,
         "n_substeps":5,
@@ -24,7 +22,6 @@ class Monde:
         },
 
         "integration_method":"SIE",
-        "collision_detection_method":"brute",
 
     }
     
@@ -88,20 +85,27 @@ class Monde:
                 n = vec.normalise(to_object)
                 impulse=((-(1+body.restitution)*body.linear_velocity).dot(n))/(n.dot(n*1/body.mass))
                 body.linear_velocity= body.linear_velocity+(impulse/body.mass)*n
-                body.position += n*(to_object.magnitude-(radius-shape.radius))
+                body.position += n*(to_object.magnitude-radius)
         
         if self.CONFIG.get("world_type")=="rectangle":
-            if body.position.x>(self.CONFIG["rect_config"].get("dimension")).x:
+            world_x=(self.CONFIG["rect_config"].get("dimension")).x
+            world_y=(self.CONFIG["rect_config"].get("dimension")).y
+            
+            if body.position.x>world_x:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
+                body.position.x = world_x
             
             if body.position.x<0:
                 body.linear_velocity.x -= (1+body.restitution)*body.linear_velocity.x
+                body.position.x= 0
 
-            if body.position.y>(self.CONFIG["rect_config"].get("dimension")).y:
+            if body.position.y>world_y:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
+                body.position.y = world_y
             
             if body.position.y<0:
                 body.linear_velocity.y -= (1+body.restitution)*body.linear_velocity.y
+                body.position.y = 0
         
         return
     
@@ -120,6 +124,7 @@ class Monde:
         body.force=vec.null()
         if body.linear_velocity.magnitude>=self.CONFIG.get("cap_speed"):
             body.linear_velocity = self.CONFIG.get("cap_speed")
+
         return
 
 class Gravity_Monde(Monde):
@@ -136,7 +141,8 @@ class Gravity_Monde(Monde):
                 object[0].force+=self.gravity
                 self.resolve_linear_motion(object[0],t/N)
                 object[1].actualise_pos()
-                self.apply_constraints(object[0],object[1])
                 self.deload_object(object[0],object[1])
+                self.apply_constraints(object[0],object[1])
+
             resolve_collisions(self.Objects)
     
